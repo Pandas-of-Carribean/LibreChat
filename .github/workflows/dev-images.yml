@@ -5,11 +5,11 @@ on:
   push:
     branches:
       - main
-      - dev
-    # paths:
-    #   - 'api/**'
-    #   - 'client/**'
-    #   - 'packages/**'
+      # - dev
+    paths:
+      - 'api/**'
+      - 'client/**'
+      - 'packages/**'
 
 jobs:
   build:
@@ -51,7 +51,7 @@ jobs:
           cp .env.example .env
 
       # Build and push Docker images for each target
-      - name: Build and push Docker images
+      - name: Build and push images
         uses: docker/build-push-action@v5
         with:
           context: .
