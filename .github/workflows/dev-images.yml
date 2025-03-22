@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      # - dev
     paths:
       - 'api/**'
       - 'client/**'
@@ -41,15 +42,8 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      # Login to Docker Hub
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.ACTOR }}
+          password: ${{ secrets.ACTOR_TOKEN }}
 
       # Prepare the environment
       - name: Prepare environment
@@ -57,16 +51,14 @@ jobs:
           cp .env.example .env
 
       # Build and push Docker images for each target
-      - name: Build and push Docker images
+      - name: Build and push images
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ${{ matrix.file }}
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ matrix.image_name }}:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/${{ matrix.image_name }}:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image_name }}:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image_name }}:latest
-          platforms: linux/amd64,linux/arm64
+            ghcr.io/${{ secrets.CR }}/${{ matrix.image_name }}:${{ github.sha }}
+            ghcr.io/${{ secrets.CR }}/${{ matrix.image_name }}:latest
+          platforms: linux/arm64
           target: ${{ matrix.target }}
