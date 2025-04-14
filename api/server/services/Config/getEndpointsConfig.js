@@ -67,9 +67,10 @@ async function getEndpointsConfig(req) {
   }
 
   const endpointsConfig = orderEndpointsConfig(mergedConfig);
+  const sortedConfig = preOrderEndpoints(endpointsConfig);
 
-  await cache.set(CacheKeys.ENDPOINT_CONFIG, endpointsConfig);
-  return endpointsConfig;
+  await cache.set(CacheKeys.ENDPOINT_CONFIG, sortedConfig);
+  return sortedConfig;
 }
 
 /**
@@ -83,4 +84,36 @@ const checkCapability = async (req, capability) => {
   return capabilities.includes(capability);
 };
 
+const preOrderEndpoints = (mergedConfig) => {
+  console.log(mergedConfig, 'beforeOrderEndpoints');
+  const defualtEndpointsOrder = {
+    [EModelEndpoint.openAI]: 10,
+    [EModelEndpoint.azureOpenAI]: 20,
+    [EModelEndpoint.google]: 30,
+    [EModelEndpoint.bedrock]: 40,
+    [EModelEndpoint.agents]: 50,
+    [EModelEndpoint.assistants]: 60,
+    [EModelEndpoint.azureAssistants]: 80,
+    [EModelEndpoint.anthropic]: 90,
+  };
+  const customSeek = 40;
+
+  let customIdx = 0;
+  // 因为mergedConfig是对象而不是数组，需要遍历对象的键
+  Object.keys(mergedConfig).forEach((key) => {
+    const endpoint = mergedConfig[key];
+    console.log(key, defualtEndpointsOrder[key], 'endpoint key');
+    if (endpoint.type === 'custom') {
+      customIdx += 1;
+      endpoint.order = customSeek + customIdx;
+    } else if (defualtEndpointsOrder[key]) {
+      // 如果在默认顺序对象中找到对应键，则应用该顺序值
+      endpoint.order = defualtEndpointsOrder[key] || 99999;
+    }else{
+      // 如果没有找到对应键，则设置为99999
+      endpoint.order = 99999;
+    }
+  });
+  return mergedConfig;
+};
 module.exports = { getEndpointsConfig, checkCapability };
