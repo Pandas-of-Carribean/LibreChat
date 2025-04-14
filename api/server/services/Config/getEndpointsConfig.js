@@ -102,7 +102,13 @@ const preOrderEndpoints = (mergedConfig) => {
   // 因为mergedConfig是对象而不是数组，需要遍历对象的键
   Object.keys(mergedConfig).forEach((key) => {
     const endpoint = mergedConfig[key];
-    console.log(key, defualtEndpointsOrder[key], 'endpoint key');
+    if(key== 'gptPlugins'){
+      // 如果gptPlugins的值为false，前端不显示内容
+      mergedConfig[key] = false;
+      // defualtEndpointsOrder[key];
+      return;
+    }
+    // console.log(key, defualtEndpointsOrder[key], 'endpoint key');
     if (endpoint.type === 'custom') {
       customIdx += 1;
       endpoint.order = customSeek + customIdx;
