@@ -9,6 +9,7 @@ const {
   validateVisionModel,
   getResponseSender,
   endpointSettings,
+  parseTextParts,
   EModelEndpoint,
   ContentTypes,
   VisionModes,
@@ -198,7 +199,11 @@ class GoogleClient extends BaseClient {
    */
   checkVisionRequest(attachments) {
     /* Validation vision request */
-    this.defaultVisionModel = this.options.visionModel ?? 'gemini-pro-vision';
+    this.defaultVisionModel =
+      this.options.visionModel ??
+      (!EXCLUDED_GENAI_MODELS.test(this.modelOptions.model)
+        ? this.modelOptions.model
+        : 'gemini-pro-vision');
     const availableModels = this.options.modelsConfig?.[EModelEndpoint.google];
     this.isVisionModel = validateVisionModel({ model: this.modelOptions.model, availableModels });
 
@@ -311,6 +316,9 @@ class GoogleClient extends BaseClient {
       for (const file of attachments) {
         if (file.embedded) {
           this.contextHandlers?.processFile(file);
+          continue;
+        }
+        if (file.metadata?.fileIdentifier) {
           continue;
         }
       }
@@ -768,6 +776,22 @@ class GoogleClient extends BaseClient {
    */
   getStreamUsage() {
     return this.usage;
+  }
+
+  getMessageMapMethod() {
+    /**
+     * @param {TMessage} msg
+     */
+    return (msg) => {
+      if (msg.text != null && msg.text && msg.text.startsWith(':::thinking')) {
+        msg.text = msg.text.replace(/:::thinking.*?:::/gs, '').trim();
+      } else if (msg.content != null) {
+        msg.text = parseTextParts(msg.content, true);
+        delete msg.content;
+      }
+
+      return msg;
+    };
   }
 
   /**
