@@ -253,6 +253,8 @@ export const getResponseSender = (endpointOption: t.TEndpointOption): string => 
       return extractOmniVersion(model);
     } else if (model && (model.includes('mistral') || model.includes('codestral'))) {
       return 'Mistral';
+    } else if (model && model.includes('deepseek')) {
+      return 'Deepseek';
     } else if (model && model.includes('gpt-')) {
       const gptVersion = extractGPTVersion(model);
       return gptVersion || 'GPT';
@@ -273,6 +275,8 @@ export const getResponseSender = (endpointOption: t.TEndpointOption): string => 
       return modelLabel;
     } else if (model && (model.includes('gemini') || model.includes('learnlm'))) {
       return 'Gemini';
+    } else if (model?.toLowerCase().includes('gemma') === true) {
+      return 'Gemma';
     } else if (model && model.includes('code')) {
       return 'Codey';
     }
@@ -289,6 +293,8 @@ export const getResponseSender = (endpointOption: t.TEndpointOption): string => 
       return extractOmniVersion(model);
     } else if (model && (model.includes('mistral') || model.includes('codestral'))) {
       return 'Mistral';
+    } else if (model && model.includes('deepseek')) {
+      return 'Deepseek';
     } else if (model && model.includes('gpt-')) {
       const gptVersion = extractGPTVersion(model);
       return gptVersion || 'GPT';
