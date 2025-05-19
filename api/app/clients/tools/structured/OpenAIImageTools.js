@@ -511,8 +511,20 @@ Guidelines:
       responseFormat: 'content_and_artifact',
     },
   );
-
+  const models = listAvailableModels(closureConfig);
+  console.log('Available image models:', models);
   return [imageGenTool, imageEditTool];
+}
+// 添加一个获取模型列表的函数
+function listAvailableModels(config) {
+  try {
+    const openai = new OpenAI(config);
+    const models = openai.models.list();
+    return models.data.filter(model => model.id.includes('image'));
+  } catch (error) {
+    console.error('Error fetching models:', error);
+    return [];
+  }
 }
 
 module.exports = createOpenAIImageTools;
