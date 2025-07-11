@@ -1,6 +1,6 @@
 const path = require('path');
 const winston = require('winston');
-require('winston-daily-rotate-file');
+const DailyRotateFile = require('winston-daily-rotate-file');
 const { redactFormat, redactMessage, debugTraverse, jsonTruncateFormat } = require('./parsers');
 
 const logDir = path.join(__dirname, '..', 'logs');
@@ -52,7 +52,7 @@ const fileFormat = winston.format.combine(
 );
 
 const transports = [
-  new winston.transports.DailyRotateFile({
+  new DailyRotateFile({
     level: 'error',
     filename: `${logDir}/error-%DATE%.log`,
     datePattern: 'YYYY-MM-DD',
@@ -65,7 +65,7 @@ const transports = [
 
 if (useDebugLogging) {
   transports.push(
-    new winston.transports.DailyRotateFile({
+    new DailyRotateFile({
       level: 'debug',
       filename: `${logDir}/debug-%DATE%.log`,
       datePattern: 'YYYY-MM-DD',

@@ -1,12 +1,14 @@
 const undici = require('undici');
 const fetch = require('node-fetch');
 const passport = require('passport');
-const client = require('openid-client');
 const jwtDecode = require('jsonwebtoken/decode');
 const { CacheKeys } = require('librechat-data-provider');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 const { hashToken, logger } = require('@librechat/data-schemas');
-const { Strategy: OpenIDStrategy } = require('openid-client/passport');
+
+// Dynamic imports for ES modules
+let client;
+let OpenIDStrategy;
 const { isEnabled, safeStringify, logHeaders } = require('@librechat/api');
 const { getStrategyFunctions } = require('~/server/services/Files/strategies');
 const { findUser, createUser, updateUser } = require('~/models');
@@ -94,19 +96,7 @@ let openidConfig = null;
 //overload currenturl function because of express version 4 buggy req.host doesn't include port
 //More info https://github.com/panva/openid-client/pull/713
 
-class CustomOpenIDStrategy extends OpenIDStrategy {
-  currentUrl(req) {
-    const hostAndProtocol = process.env.DOMAIN_SERVER;
-    return new URL(`${hostAndProtocol}${req.originalUrl ?? req.url}`);
-  }
-  authorizationRequestParams(req, options) {
-    const params = super.authorizationRequestParams(req, options);
-    if (options?.state && !params.has('state')) {
-      params.set('state', options.state);
-    }
-    return params;
-  }
-}
+// CustomOpenIDStrategy class will be defined inside setupOpenId function after dynamic import
 
 /**
  * Exchange the access token for a new access token using the on-behalf-of flow if required.
@@ -268,6 +258,29 @@ function convertToUsername(input, defaultValue = '') {
  */
 async function setupOpenId() {
   try {
+    // Dynamically import ES modules
+    if (!client || !OpenIDStrategy) {
+      const openidClient = await import('openid-client');
+      client = openidClient;
+      const passportStrategy = await import('openid-client/passport');
+      OpenIDStrategy = passportStrategy.Strategy;
+    }
+
+    // Define CustomOpenIDStrategy class after dynamic import
+    class CustomOpenIDStrategy extends OpenIDStrategy {
+      currentUrl(req) {
+        const hostAndProtocol = process.env.DOMAIN_SERVER;
+        return new URL(`${hostAndProtocol}${req.originalUrl ?? req.url}`);
+      }
+      authorizationRequestParams(req, options) {
+        const params = super.authorizationRequestParams(req, options);
+        if (options?.state && !params.has('state')) {
+          params.set('state', options.state);
+        }
+        return params;
+      }
+    }
+
     /** @type {ClientMetadata} */
     const clientMetadata = {
       client_id: process.env.OPENID_CLIENT_ID,
