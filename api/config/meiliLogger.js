@@ -1,6 +1,6 @@
 const path = require('path');
 const winston = require('winston');
-require('winston-daily-rotate-file');
+const DailyRotateFile = require('winston-daily-rotate-file');
 
 const logDir = path.join(__dirname, '..', 'logs');
 
@@ -42,7 +42,7 @@ const fileFormat = winston.format.combine(
 
 const logLevel = useDebugLogging ? 'debug' : 'error';
 const transports = [
-  new winston.transports.DailyRotateFile({
+  new DailyRotateFile({
     level: logLevel,
     filename: `${logDir}/meiliSync-%DATE%.log`,
     datePattern: 'YYYY-MM-DD',
