@@ -15,10 +15,13 @@ import {
   CodeBlockProvider,
   useCodeBlockContext,
 } from '~/Providers';
+import { Citation, CompositeCitation, HighlightedText } from '~/components/Web/Citation';
 import { Artifact, artifactPlugin } from '~/components/Artifacts/Artifact';
 import { langSubset, preprocessLaTeX, handleDoubleClick } from '~/utils';
 import CodeBlock from '~/components/Messages/Content/CodeBlock';
+import MarkdownErrorBoundary from './MarkdownErrorBoundary';
 import useHasAccess from '~/hooks/Roles/useHasAccess';
+import { unicodeCitation } from '~/components/Web';
 import { useFileDownload } from '~/data-provider';
 import useLocalize from '~/hooks/useLocalize';
 import store from '~/store';
@@ -197,16 +200,14 @@ const Markdown = memo(({ content = '', isLatestMessage }: TContentProps) => {
     [],
   );
 
-  const remarkPlugins: Pluggable[] = useMemo(
-    () => [
-      supersub,
-      remarkGfm,
-      remarkDirective,
-      artifactPlugin,
-      [remarkMath, { singleDollarTextMath: true }],
-    ],
-    [],
-  );
+  const remarkPlugins: Pluggable[] = [
+    supersub,
+    remarkGfm,
+    remarkDirective,
+    artifactPlugin,
+    [remarkMath, { singleDollarTextMath: false }],
+    unicodeCitation,
+  ];
 
   if (isInitializing) {
     return (
@@ -219,28 +220,33 @@ const Markdown = memo(({ content = '', isLatestMessage }: TContentProps) => {
   }
 
   return (
-    <ArtifactProvider>
-      <CodeBlockProvider>
-        <ReactMarkdown
-          /** @ts-ignore */
-          remarkPlugins={remarkPlugins}
-          /* @ts-ignore */
-          rehypePlugins={rehypePlugins}
-          components={
-            {
-              code,
-              a,
-              p,
-              artifact: Artifact,
-            } as {
-              [nodeType: string]: React.ElementType;
+    <MarkdownErrorBoundary content={content} codeExecution={true}>
+      <ArtifactProvider>
+        <CodeBlockProvider>
+          <ReactMarkdown
+            /** @ts-ignore */
+            remarkPlugins={remarkPlugins}
+            /* @ts-ignore */
+            rehypePlugins={rehypePlugins}
+            components={
+              {
+                code,
+                a,
+                p,
+                artifact: Artifact,
+                citation: Citation,
+                'highlighted-text': HighlightedText,
+                'composite-citation': CompositeCitation,
+              } as {
+                [nodeType: string]: React.ElementType;
+              }
             }
-          }
-        >
-          {currentContent}
-        </ReactMarkdown>
-      </CodeBlockProvider>
-    </ArtifactProvider>
+          >
+            {currentContent}
+          </ReactMarkdown>
+        </CodeBlockProvider>
+      </ArtifactProvider>
+    </MarkdownErrorBoundary>
   );
 });
 
