@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import type { TPromptGroup } from 'librechat-data-provider';
-import { OGDialog, OGDialogTitle, OGDialogContent } from '~/components/ui';
+import { OGDialog, OGDialogTitle, OGDialogContent } from '@librechat/client';
 import { detectVariables } from '~/utils';
 import VariableForm from './VariableForm';
 
@@ -31,7 +31,7 @@ const VariableDialog: React.FC<VariableDialogProps> = ({ open, onClose, group })
 
   return (
     <OGDialog open={open} onOpenChange={handleOpenChange}>
-      <OGDialogContent className="max-w-full bg-white dark:border-gray-700 dark:bg-gray-850 dark:text-gray-300 md:max-w-3xl">
+      <OGDialogContent className="max-h-[90vh] max-w-full overflow-y-auto bg-white dark:border-gray-700 dark:bg-gray-850 dark:text-gray-300 md:max-w-[60vw]">
         <OGDialogTitle>{group.name}</OGDialogTitle>
         <VariableForm group={group} onClose={onClose} />
       </OGDialogContent>

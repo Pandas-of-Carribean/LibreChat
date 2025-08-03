@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, memo, useCallback } from 'react';
 import { AutoSizer, List } from 'react-virtualized';
+import { Spinner, useCombobox } from '@librechat/client';
 import { useSetRecoilState, useRecoilValue } from 'recoil';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
 import type { TPromptGroup } from 'librechat-data-provider';
@@ -7,9 +8,8 @@ import type { PromptOption } from '~/common';
 import { removeCharIfLast, mapPromptGroups, detectVariables } from '~/utils';
 import VariableDialog from '~/components/Prompts/Groups/VariableDialog';
 import CategoryIcon from '~/components/Prompts/Groups/CategoryIcon';
-import { useLocalize, useCombobox, useHasAccess } from '~/hooks';
+import { useLocalize, useHasAccess } from '~/hooks';
 import { useGetAllPromptGroups } from '~/data-provider';
-import { Spinner } from '~/components/svg';
 import MentionItem from './MentionItem';
 import store from '~/store';
 
@@ -201,7 +201,7 @@ function PromptsCommand({
         <div className="popover border-token-border-light rounded-2xl border bg-surface-tertiary-alt p-2 shadow-lg">
           <input
             // The user expects focus to transition to the input field when the popover is opened
-
+            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             ref={inputRef}
             placeholder={localize('com_ui_command_usage_placeholder')}

@@ -1,13 +1,13 @@
-// abortMiddleware.js
+const { logger } = require('@librechat/data-schemas');
+const { countTokens, isEnabled, sendEvent } = require('@librechat/api');
 const { isAssistantsEndpoint, ErrorTypes } = require('librechat-data-provider');
-const { sendMessage, sendError, countTokens, isEnabled } = require('~/server/utils');
 const { truncateText, smartTruncateText } = require('~/app/clients/prompts');
 const clearPendingReq = require('~/cache/clearPendingReq');
+const { sendError } = require('~/server/middleware/error');
 const { spendTokens } = require('~/models/spendTokens');
 const abortControllers = require('./abortControllers');
 const { saveMessage, getConvo } = require('~/models');
 const { abortRun } = require('./abortRun');
-const { logger } = require('~/config');
 
 const abortDataMap = new WeakMap();
 
@@ -101,7 +101,7 @@ async function abortMessage(req, res) {
   cleanupAbortController(abortKey);
 
   if (res.headersSent && finalEvent) {
-    return sendMessage(res, finalEvent);
+    return sendEvent(res, finalEvent);
   }
 
   res.setHeader('Content-Type', 'application/json');
@@ -174,7 +174,7 @@ const createAbortController = (req, res, getAbortData, getReqData) => {
    * @param {string} responseMessageId
    */
   const onStart = (userMessage, responseMessageId) => {
-    sendMessage(res, { message: userMessage, created: true });
+    sendEvent(res, { message: userMessage, created: true });
 
     const abortKey = userMessage?.conversationId ?? req.user.id;
     getReqData({ abortKey });
@@ -311,7 +311,7 @@ const handleAbortError = async (res, req, error, data) => {
   } else {
     logger.error('[handleAbortError] AI response error; aborting request:', error);
   }
-  const { sender, conversationId, messageId, parentMessageId, partialText } = data;
+  const { sender, conversationId, messageId, parentMessageId, userMessageId, partialText } = data;
 
   if (error.stack && error.stack.includes('google')) {
     logger.warn(
@@ -327,7 +327,7 @@ const handleAbortError = async (res, req, error, data) => {
     errorText = `{"type":"${ErrorTypes.INVALID_REQUEST}"}`;
   }
 
-  if (error?.message?.includes('does not support \'system\'')) {
+  if (error?.message?.includes("does not support 'system'")) {
     errorText = `{"type":"${ErrorTypes.NO_SYSTEM_MESSAGES}"}`;
   }
 
@@ -344,10 +344,10 @@ const handleAbortError = async (res, req, error, data) => {
       parentMessageId,
       text: errorText,
       user: req.user.id,
-      shouldSaveMessage: true,
       spec: endpointOption?.spec,
       iconURL: endpointOption?.iconURL,
       modelLabel: endpointOption?.modelLabel,
+      shouldSaveMessage: userMessageId != null,
       model: endpointOption?.modelOptions?.model || req.body?.model,
     };
 

@@ -16,8 +16,8 @@ import useGetSender from '~/hooks/Conversations/useGetSender';
 import useFileHandling from '~/hooks/Files/useFileHandling';
 import { useInteractionHealthCheck } from '~/data-provider';
 import { useChatContext } from '~/Providers/ChatContext';
-import useLocalize from '~/hooks/useLocalize';
 import { globalAudioId } from '~/common';
+import { useLocalize } from '~/hooks';
 import store from '~/store';
 
 type KeyEvent = KeyboardEvent<HTMLTextAreaElement>;
@@ -96,13 +96,14 @@ export default function useTextarea({
         return localize('com_endpoint_message_not_appendable');
       }
 
-      const sender = isAssistant || isAgent
-        ? getEntityName({ name: entityName, isAgent, localize })
-        : getSender(conversation as TEndpointOption);
+      const sender =
+        isAssistant || isAgent
+          ? getEntityName({ name: entityName, isAgent, localize })
+          : getSender(conversation as TEndpointOption);
 
-      return `${localize(
-        'com_endpoint_message_new', { 0: sender ? sender : localize('com_endpoint_ai') },
-      )}`;
+      return `${localize('com_endpoint_message_new', {
+        0: sender ? sender : localize('com_endpoint_ai'),
+      })}`;
     };
 
     const placeholder = getPlaceholderText();
@@ -237,7 +238,8 @@ export default function useTextarea({
     textAreaRef,
     handlePaste,
     handleKeyDown,
-    handleCompositionStart,
+    isNotAppendable,
     handleCompositionEnd,
+    handleCompositionStart,
   };
 }

@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button, TextareaAutosize, Input } from '@librechat/client';
 import { useForm, Controller, FormProvider } from 'react-hook-form';
 import { LocalStorageKeys, PermissionTypes, Permissions } from 'librechat-data-provider';
 import CategorySelector from '~/components/Prompts/Groups/CategorySelector';
+import VariablesDropdown from '~/components/Prompts/VariablesDropdown';
 import PromptVariables from '~/components/Prompts/PromptVariables';
-import { Button, TextareaAutosize, Input } from '~/components/ui';
 import Description from '~/components/Prompts/Description';
 import { useLocalize, useHasAccess } from '~/hooks';
 import Command from '~/components/Prompts/Command';
@@ -132,7 +133,8 @@ const CreatePromptForm = ({
         <div className="flex w-full flex-col gap-4 md:mt-[1.075rem]">
           <div>
             <h2 className="flex items-center justify-between rounded-t-lg border border-border-medium py-2 pl-4 pr-1 text-base font-semibold dark:text-gray-200">
-              {localize('com_ui_prompt_text')}*
+              <span>{localize('com_ui_prompt_text')}*</span>
+              <VariablesDropdown fieldName="prompt" className="mr-2" />
             </h2>
             <div className="min-h-32 rounded-b-lg border border-border-medium p-4 transition-all duration-150">
               <Controller

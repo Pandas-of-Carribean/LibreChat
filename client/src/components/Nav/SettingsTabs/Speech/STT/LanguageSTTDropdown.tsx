@@ -1,5 +1,5 @@
 import { useRecoilState } from 'recoil';
-import { Dropdown } from '~/components/ui';
+import { Dropdown } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 import store from '~/store';
 
@@ -102,8 +102,8 @@ export default function LanguageSTTDropdown() {
         onChange={handleSelect}
         options={languageOptions}
         sizeClasses="[--anchor-max-height:256px]"
-        anchor="bottom start"
         testId="LanguageSTTDropdown"
+        className="z-50"
       />
     </div>
   );

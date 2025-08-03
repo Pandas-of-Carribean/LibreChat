@@ -1,5 +1,6 @@
 import { memo, useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { useWatch } from 'react-hook-form';
+import { TextareaAutosize } from '@librechat/client';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { Constants, isAssistantsEndpoint, isAgentsEndpoint } from 'librechat-data-provider';
 import {
@@ -20,7 +21,6 @@ import {
 import { mainTextareaId, BadgeItem } from '~/common';
 import AttachFileChat from './Files/AttachFileChat';
 import FileFormChat from './Files/FileFormChat';
-import { TextareaAutosize } from '~/components';
 import { cn, removeFocusRings } from '~/utils';
 import TextareaHeader from './TextareaHeader';
 import PromptsCommand from './PromptsCommand';
@@ -108,6 +108,10 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
   );
 
   const handleContainerClick = useCallback(() => {
+    /** Check if the device is a touchscreen */
+    if (window.matchMedia?.('(pointer: coarse)').matches) {
+      return;
+    }
     textAreaRef.current?.focus();
   }, []);
 
@@ -126,13 +130,20 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
   });
 
   const { submitMessage, submitPrompt } = useSubmitMessage();
+
   const handleKeyUp = useHandleKeyUp({
     index,
     textAreaRef,
     setShowPlusPopover,
     setShowMentionPopover,
   });
-  const { handlePaste, handleKeyDown, handleCompositionStart, handleCompositionEnd } = useTextarea({
+  const {
+    isNotAppendable,
+    handlePaste,
+    handleKeyDown,
+    handleCompositionStart,
+    handleCompositionEnd,
+  } = useTextarea({
     textAreaRef,
     submitButtonRef,
     setIsScrollable,
@@ -195,8 +206,8 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     <form
       onSubmit={methods.handleSubmit(submitMessage)}
       className={cn(
-        'mx-auto flex flex-row gap-3 sm:px-2',
-        maximizeChatSpace ? 'w-full max-w-full' : 'md:max-w-3xl xl:max-w-4xl',
+        'mx-auto flex w-full flex-row gap-3 transition-[max-width] duration-300 sm:px-2',
+        maximizeChatSpace ? 'max-w-full' : 'md:max-w-3xl xl:max-w-4xl',
         centerFormOnLanding &&
           (conversationId == null || conversationId === Constants.NEW_CONVO) &&
           !isSubmitting &&
@@ -251,7 +262,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                     ref(e);
                     (textAreaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = e;
                   }}
-                  disabled={disableInputs}
+                  disabled={disableInputs || isNotAppendable}
                   onPaste={handlePaste}
                   onKeyDown={handleKeyDown}
                   onKeyUp={handleKeyUp}
@@ -271,7 +282,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                   className={cn(
                     baseClasses,
                     removeFocusRings,
-                    'transition-[max-height] duration-200',
+                    'transition-[max-height] duration-200 disabled:cursor-not-allowed',
                   )}
                 />
                 <div className="flex flex-col items-start justify-start pt-1.5">
@@ -294,6 +305,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
               </div>
               <BadgeRow
                 showEphemeralBadges={!isAgentsEndpoint(endpoint) && !isAssistantsEndpoint(endpoint)}
+                isSubmitting={isSubmitting || isSubmittingAdded}
                 conversationId={conversationId}
                 onChange={setBadges}
                 isInChat={
@@ -306,7 +318,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                   methods={methods}
                   ask={submitMessage}
                   textAreaRef={textAreaRef}
-                  disabled={disableInputs}
+                  disabled={disableInputs || isNotAppendable}
                   isSubmitting={isSubmitting}
                 />
               )}
@@ -318,7 +330,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                     <SendButton
                       ref={submitButtonRef}
                       control={methods.control}
-                      disabled={filesLoading || isSubmitting || disableInputs}
+                      disabled={filesLoading || isSubmitting || disableInputs || isNotAppendable}
                     />
                   )
                 )}
