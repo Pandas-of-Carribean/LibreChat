@@ -550,7 +550,7 @@ function listAvailableModels(config) {
   try {
     const openai = new OpenAI(config);
     const models = openai.models.list();
-    return models.data.filter(model => model.id.includes('image'));
+    return models?.data?.filter(model => model.id.includes('image'));
   } catch (error) {
     console.error('Error fetching models:', error);
     return [];
