@@ -59,7 +59,7 @@ const violationCache = (namespace, ttl = undefined) => {
  * @returns {MemoryStore | ConnectRedis} Session store instance.
  */
 const sessionCache = (namespace, ttl = undefined) => {
-  namespace = namespace.endsWith(':') ? namespace : `${namespace}:`;
+  namespace = namespace?.endsWith(':') ? namespace : `${namespace}:`;
   if (!cacheConfig.USE_REDIS) return new MemoryStore({ ttl, checkPeriod: Time.ONE_DAY });
   const store = new ConnectRedis({ client: ioredisClient, ttl, prefix: namespace });
   if (ioredisClient) {
